@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
-import { objects, stroke, types, wobblyRect } from './helpers';
+import { objects, stroke, types, wobblyDiamond, wobblyRect } from './helpers';
 
 type Verdict = { shape: string; confidence: number; deliberate: number };
-const verdict = (over: Partial<Verdict> = {}) => ({ shape: 'rectangle', confidence: 0.92, deliberate: 0.9, probabilities: { circle: 0.02, triangle: 0.02, rectangle: 0.94, none: 0.02 }, model: 'jev-test', ...over });
+const verdict = (over: Partial<Verdict> = {}) => ({ shape: 'rectangle', confidence: 0.92, deliberate: 0.9, probabilities: { circle: 0.02, triangle: 0.02, rectangle: 0.92, diamond: 0.02, none: 0.02 }, model: 'jev-test', ...over });
 
 /** Intercepta o proxy: nenhuma chave real é usada nos testes. */
 async function mockProxy(page: Page, opts: { reply?: () => Verdict | { status: number }; delayMs?: number } = {}) {
@@ -36,6 +36,14 @@ test('traço ambíguo: o local deixa livre, a IA decide em segundo plano e o des
 
   await page.keyboard.press('Control+z'); // restaura o traço original
   expect(await types(page)).toEqual(['freehand']);
+});
+
+test('losango torto: a IA decide "diamond" e o app desenha o losango com a geometria local', async ({ page }) => {
+  const calls = await mockProxy(page, { reply: () => verdict({ shape: 'diamond' }) });
+  await stroke(page, wobblyDiamond(420, 320, 240, 160));
+  await expect.poll(() => types(page)).toEqual(['diamond']);
+  expect(calls).toHaveLength(1);
+  expect((await objects(page))[0].recognizedFrom.source).toBe('ai');
 });
 
 test('confiança baixa, "pouca intenção" ou "none": o traço continua livre', async ({ page }) => {

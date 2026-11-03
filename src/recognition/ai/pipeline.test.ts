@@ -7,7 +7,7 @@ const { buildDataset } = await import('./dataset');
 const { fakeJev, fakeFetch } = await import('./fake-jev');
 
 
-test('pipeline completo: separa círculo, retângulo e triângulo de losango/estrela/oito', async () => {
+test('pipeline completo: separa círculo, retângulo, triângulo e losango de pentágono/estrela/oito', async () => {
   const items = buildDataset(30);
   let n = 0, correct = 0, eligible = 0, negAccepted = 0, negTotal = 0, tokens = 0;
   const misses: string[] = [];

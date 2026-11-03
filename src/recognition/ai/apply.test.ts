@@ -26,6 +26,26 @@ test('"circle" vira elipse com a geometria calculada localmente', () => {
   expect(shape.recognizedFrom?.trigger).toBe('hold');
 });
 
+test('"diamond" vira losango com a geometria calculada localmente', () => {
+  const shape = shapeFromVerdict(stroke('diamond'), v({ shape: 'diamond' }), ctx, 'release')!;
+  expect(shape.type).toBe('diamond');
+  expect(shape.recognizedFrom).toMatchObject({ source: 'ai' });
+});
+
+test('um losango não vira "retângulo" só porque a IA disse (encaixe local mínimo)', () => {
+  expect(shapeFromVerdict(stroke('diamond'), v({ shape: 'rectangle' }), ctx, 'release')).toBeNull();
+});
+
+test('um círculo trêmulo que a IA chama de losango não é convertido (encaixe mínimo do losango é maior)', () => {
+  const r = rng(11);
+  let converted = 0;
+  for (let i = 0; i < 40; i++) {
+    const s: Freehand = { id: 's', type: 'freehand', color: 'ink', size: 'm', seed: 1, createdAt: 0, points: sample('ellipse', r) };
+    if (shapeFromVerdict(s, v({ shape: 'diamond' }), ctx, 'release')) converted++;
+  }
+  expect(converted).toBeLessThanOrEqual(2);
+});
+
 test('confiança baixa, pouca "intenção" ou "none": mantém o traço livre', () => {
   const s = stroke('rectangle');
   expect(shapeFromVerdict(s, v({ confidence: 0.5 }), ctx, 'release')).toBeNull();

@@ -14,5 +14,5 @@ export function shapeFromVerdict(stroke: Freehand, v: ShapeVerdict, ctx: Beautif
   const type = AI_TO_TYPE[v.shape];
   if (!type) return null;
   if (v.confidence < config.aiThreshold || v.deliberate < config.aiDeliberate) return null;
-  return convertAs(stroke, type, { source: 'ai', confidence: v.confidence }, ctx, config.aiMinFit, trigger);
+  return convertAs(stroke, type, { source: 'ai', confidence: v.confidence }, ctx, config.aiMinFitByType[type] ?? config.aiMinFit, trigger);
 }

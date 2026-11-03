@@ -46,3 +46,21 @@ test('ligado: elipse quase redonda (até 20%) vira círculo', () => {
   const out = beautify(e, ctx) as Ellipse;
   expect(out.rx).toBeCloseTo(out.ry);
 });
+
+test('ligado: triângulo retângulo continua retângulo, com catetos nos eixos', () => {
+  set(true);
+  const out = beautify(tri([[2, 52], [103, 47], [-1, 3]]), ctx) as Triangle;
+  const xs = out.vertices.map((p) => p[0]), ys = out.vertices.map((p) => p[1]);
+  // dois vértices em cada x e em cada y: catetos horizontal e vertical
+  expect(new Set(xs.map((x) => x.toFixed(3))).size).toBe(2);
+  expect(new Set(ys.map((y) => y.toFixed(3))).size).toBe(2);
+  expect(Math.max(...xs) - Math.min(...xs)).toBeGreaterThan(90);
+  expect(Math.max(...ys) - Math.min(...ys)).toBeLessThan(60);
+});
+
+test('ligado: ângulo reto na ponta com catetos na diagonal segue como isósceles em pé', () => {
+  set(true);
+  const [apex, l, r] = (beautify(tri([[0, 50], [50, 0], [100, 50]]), ctx) as Triangle).vertices;
+  expect(l[1]).toBeCloseTo(r[1]);
+  expect(apex[1]).toBeLessThan(l[1]);
+});

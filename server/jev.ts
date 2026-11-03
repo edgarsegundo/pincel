@@ -15,7 +15,7 @@ export const JEV_URL = 'https://api.typesafe.ai/v1/systemone';
 export const DEFAULT_MODEL = 'jev-1.13.0';
 
 /** Mude esta versão sempre que alterar os textos abaixo (as notas calibradas dependem deles). */
-export const PROMPT_VERSION = 'shape-v1';
+export const PROMPT_VERSION = 'shape-v3';
 
 export const SHAPE_INSTRUCTIONS =
   'The state describes ONE hand-drawn stroke on a whiteboard, already measured. ' +
@@ -35,20 +35,24 @@ export const SHAPE_CRITERIA: Record<AiShape, Record<string, string> | null> = {
   },
   rectangle: {
     means: 'a closed outline with four right-angle corners: a rectangle or a square',
-    typical: 'four turns of about 90 degrees, bbox_fill above 0.85, long straight sides',
+    typical: 'four turns of about 90 degrees, bbox_fill above 0.85, long straight sides parallel to the bounding box',
+  },
+  diamond: {
+    means: 'a closed outline with four corners that point up, down, left and right: a diamond (rhombus), the decision symbol of a flowchart',
+    typical: 'four bends of about 70 to 130 degrees (bend_count 4, even when corner_count is lower because of hand tremor), self_intersections 0, bbox_fill about 0.5 (between 0.4 and 0.58; a round outline has about 0.75 and is NOT a diamond), the corners sit near the middle of each side of the bounding box in the outline, sides are diagonal',
   },
   triangle: {
     means: 'a closed outline with exactly three corners',
     typical: 'three turns of about 100 to 150 degrees, bbox_fill about 0.5 (between 0.35 and 0.65)',
   },
   none: {
-    means: 'not clearly any of the three: a diamond, a star, a heart, an arrow, a letter, a number, a spiral, a check mark, an open curve, a scribble or any other drawing',
+    means: 'not clearly any of the four: a pentagon or other polygon, a star, a heart, an arrow, a letter, a number, a spiral, a check mark, an open curve, a scribble or any other drawing',
     typical: 'open or messy outline, self_intersections above 1, an irregular mix of turns, or low scores everywhere',
   },
 };
 
 export const DELIBERATE_INSTRUCTIONS =
-  'Was this stroke a deliberate attempt to draw a clean geometric shape (circle, oval, triangle, rectangle or square), ' +
+  'Was this stroke a deliberate attempt to draw a clean geometric shape (circle, oval, triangle, rectangle, square or diamond), ' +
   'as opposed to a handwritten letter or number, a doodle, a scribble, a spiral, a check mark, or a partial curve?';
 
 export function buildJevRequest(input: ShapeRequest, model: string) {

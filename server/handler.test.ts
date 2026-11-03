@@ -15,7 +15,7 @@ const body = {
 const jevOk = (over: any = {}) => ({
   model: 'jev-1.13.0',
   answers: {
-    shape: { type: 'choice', choice: 'rectangle', confidence: 0.91, probabilities: { circle: 0.02, triangle: 0.03, rectangle: 0.93, none: 0.02 } },
+    shape: { type: 'choice', choice: 'rectangle', confidence: 0.91, probabilities: { circle: 0.02, triangle: 0.03, rectangle: 0.9, diamond: 0.03, none: 0.02 } },
     deliberate: { type: 'noul', noul: 0.88 },
   },
   usage: { input_tokens: 412, output_tokens: 0 },
@@ -37,7 +37,7 @@ test('monta a pergunta ao JEV no formato documentado (Choice + Noul, modelo pina
   expect(headers.authorization).toBe('Bearer k-test');
   expect(sent.model).toBe(DEFAULT_MODEL);
   expect(sent.questions.shape.type).toBe('choice');
-  expect(Object.keys(sent.questions.shape.criteria).sort()).toEqual(['circle', 'none', 'rectangle', 'triangle']);
+  expect(Object.keys(sent.questions.shape.criteria).sort()).toEqual(['circle', 'diamond', 'none', 'rectangle', 'triangle']);
   expect(sent.questions.deliberate.type).toBe('noul');
   expect(sent.state.stroke.corner_count).toBe(4);
   const v = await res.json();

@@ -207,7 +207,7 @@ Em vez de coordenadas brutas, o navegador envia medidas geométricas do traço (
 
 | Pergunta | Tipo | Opções / resposta | Para quê |
 | --- | --- | --- | --- |
-| `shape` | Choice | `circle`, `rectangle`, `triangle`, `none` (cada uma com `criteria` descrevendo o que a caracteriza) | Qual forma básica? ("círculo" cobre oval; o ajuste local define os raios) |
+| `shape` | Choice | `circle`, `rectangle`, `triangle`, `diamond`, `none` (cada uma com `criteria` descrevendo o que a caracteriza) | Qual forma básica? ("círculo" cobre oval; o ajuste local define os raios) |
 | `deliberate` | Noul | probabilidade 0–1 | Foi uma tentativa **deliberada** de forma, e não letra, número, rabisco ou espiral? Ataca o falso positivo principal |
 
 Perguntas estreitas combinadas no código (padrão da doc: *speculative fan-out* / *composite scoring*). O texto das perguntas e o modelo são **pinados e versionados** (`PROMPT_VERSION`, `JEV_MODEL`), como no projeto emprego: alterar o texto muda a semântica das notas calibradas.
@@ -216,7 +216,7 @@ Perguntas estreitas combinadas no código (padrão da doc: *speculative fan-out*
 
 - **Ao soltar:** só se o reconhecedor local **não converteu** (ambíguo ou abaixo do limiar), o traço é **quase fechado** (lacuna < 22%), tem tamanho plausível e passa nas mesmas proteções da conversão local (tamanho mínimo, cadência de escrita, auto-endireitar ligado). Letras, linhas e traços abertos nunca saem do navegador. A resposta chega depois: o traço vira forma com a animação normal, em **um passo de histórico** (Cmd+Z restaura o traço).
 - **Ao segurar parado:** se o local não reconhece nem com o limiar menor, a IA é consultada na hora; se a resposta chega com o ponteiro ainda parado, entra o mesmo fluxo de "segurar e ajustar o tamanho".
-- **Aceite local da resposta** (`recognition/ai/apply.ts`): forma ≠ `none`, confiança do Choice ≥ `aiThreshold` (0,60), `deliberate` ≥ 0,50 **e** encaixe local mínimo de 0,30 no tipo escolhido. O JEV nunca força uma geometria absurda (um triângulo nítido não vira "círculo").
+- **Aceite local da resposta** (`recognition/ai/apply.ts`): forma ≠ `none`, confiança do Choice ≥ `aiThreshold` (0,60), `deliberate` ≥ 0,50 **e** encaixe local mínimo de 0,30 no tipo escolhido (0,70 para o losango, que o JEV às vezes confunde com um círculo trêmulo). O JEV nunca força uma geometria absurda (um triângulo nítido não vira "círculo").
 
 ### 11.4 Robustez (`recognition/ai/coordinator.ts`)
 
@@ -236,11 +236,11 @@ A chave **nunca** vai ao navegador. O proxy aceita **apenas o formato exato do P
 
 ### 11.7 Próximas capacidades (mesmo desenho)
 
-Mais formas (losango, linha, estrela): nova opção em `SHAPE_CRITERIA` + linha em `recognition/ai/shapes.ts`. **Arrumar o quadro** (Choice/Score sobre o resumo da seleção, aplicando com `beautify`) e **rabisco → diagrama** (grafo semântico) seguem o mesmo contrato (`AiProvider`, um passo no histórico, descarte de resposta obsoleta). Testar também a alternativa de enviar uma imagem pequena do traço a um modelo de visão (exige o cabeçalho de "danger zone" e custa mais) se as características não bastarem.
+Mais formas (linha, estrela, seta): nova opção em `SHAPE_CRITERIA` + linha em `recognition/ai/shapes.ts`. **Arrumar o quadro** (Choice/Score sobre o resumo da seleção, aplicando com `beautify`) e **rabisco → diagrama** (grafo semântico) seguem o mesmo contrato (`AiProvider`, um passo no histórico, descarte de resposta obsoleta). Testar também a alternativa de enviar uma imagem pequena do traço a um modelo de visão (exige o cabeçalho de "danger zone" e custa mais) se as características não bastarem.
 
 ## 12. Testes e qualidade
 
-- **Unitários (67):** calibração do treinamento (trava de "none", limiares, não piorar), viewport, hit-test, histórico (incluindo a tela no desfazer da importação), reconhecimento (360 traços sintéticos: 98,7% de acerto e 0% de falsos positivos ao soltar; 100% ao segurar), conectores, validação de importação (campos opcionais, ids repetidos), cache de caixas, características geométricas, coordenador da IA (concorrência, cancelamento, descarte, disjuntor), aplicação do veredito, proxy (formato do pedido ao JEV, validação, limite, erros, CORS) e pipeline completo com um JEV simulado por regra (91% de acerto nas formas e 0 falsos positivos em losango/estrela/oito; **mede o encanamento e a separabilidade das características, não a qualidade do JEV real**).
+- **Unitários (70):** calibração do treinamento (trava de "none", limiares, não piorar), viewport, hit-test, histórico (incluindo a tela no desfazer da importação), reconhecimento (360 traços sintéticos: 98,7% de acerto e 0% de falsos positivos ao soltar; 100% ao segurar), conectores, validação de importação (campos opcionais, ids repetidos), cache de caixas, características geométricas, coordenador da IA (concorrência, cancelamento, descarte, disjuntor), aplicação do veredito, proxy (formato do pedido ao JEV, validação, limite, erros, CORS) e pipeline completo com um JEV simulado por regra (91% de acerto nas formas e 0 falsos positivos em losango/estrela/oito; **mede o encanamento e a separabilidade das características, não a qualidade do JEV real**).
 - **E2E em Chromium (29):** desenhar, conversão e desfazer em dois passos, segurar e ajustar, texto e rótulo, rabisco, conector que acompanha, persistência, exportar/importar JSON, PNG, configurações/idioma, fade ao apagar, notificação de limpar, desempenho com 1.000 formas, e o fluxo da IA com o proxy interceptado (traço ambíguo → forma em segundo plano, recusa por confiança/intenção/encaixe, resposta atrasada descartada, indicador, segurar + IA, proxy sem chave, disjuntor, IA desligada, traço aberto nunca enviado).
 - **Saúde (e2e):** sem vazamento (8 ciclos completos de uso: heap estabiliza em ~4,7 MB, 308 nós e 100 listeners constantes), 0 frames de renderização quando ocioso, 5.000 objetos (redesenho ~5 ms, hover sem custo mensurável), traço de 1.800 pontos com custo por frame estável (≤ 1,3 ms).
 - **PWA (1):** abre e desenha offline no build de produção.

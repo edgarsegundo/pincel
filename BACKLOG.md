@@ -63,7 +63,8 @@ O `rebuild.sh` foi testado num clone limpo (npm ci, 67 testes, build e rsync), *
 - [ ] **Seta automática:** uma linha que liga duas formas deve ganhar seta no fim sozinha? Hoje não ganha (a seta se define na barra de contexto). Com seta automática, fluxogramas ficam mais rápidos; sem, diagramas sem direção ficam mais limpos.
 - [ ] **Marca:** ícone e cor de acento definitivos. Os atuais são provisórios (quadrado azul com uma pincelada). Afeta os tokens de cor, o ícone do PWA e o `manifest`. Quando decidir, 🤖 troco tudo.
 - [x] **Hospedagem:** decidido (VPS atrás do nginx do `reverse-proxy-config`, em `https://lousa.ea.tv.br`). `rebuild.sh`, `Dockerfile`, `docker-compose.yml` e `deploy/nginx/lousa.ea.tv.br.conf` já existem; falta o checklist da seção 1.4.
-- [ ] **Quais formas a IA reconhece além de círculo/retângulo/triângulo?** Losango, linha, estrela, seta, coração... Cada uma é uma entrada em `server/jev.ts` + uma linha em `src/recognition/ai/shapes.ts`.
+- [x] **Losango na IA** (03/11/2026): feito, por ser o símbolo de decisão dos fluxogramas. Calibração com o JEV real (300 traços, `shape-v3`): losango 60/60, precisão 99,1% e cobertura 92% nos limiares atuais (0,60 / 0,50), latência p50 215 ms. O losango exige encaixe local ≥ 0,70 (círculos muito trêmulos às vezes parecem losango ao JEV).
+- [ ] **Quais outras formas a IA reconhece?** Linha, estrela, seta, coração... Cada uma é uma entrada em `server/jev.ts` + uma linha em `src/recognition/ai/shapes.ts`.
 - [ ] **Ajuda da IA ligada por padrão?** Hoje sim (se houver proxy configurado). Alternativa: desligada até o usuário ativar nas configurações.
 
 ---

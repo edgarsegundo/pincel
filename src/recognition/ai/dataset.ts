@@ -1,8 +1,8 @@
 import { rng, sample, trace, type Label } from '../synthetic';
 import type { Vec2 } from '../../core/types';
 
-/** Conjunto rotulado para testar/calibrar a IA: formas com tremor (ambíguas) e fechados que NÃO são círculo/triângulo/retângulo. */
-export type AiLabel = 'circle' | 'rectangle' | 'triangle' | 'none';
+/** Conjunto rotulado para testar/calibrar a IA: formas com tremor (ambíguas) e fechados que NÃO são círculo/triângulo/retângulo/losango. */
+export type AiLabel = 'circle' | 'rectangle' | 'triangle' | 'diamond' | 'none';
 export interface Item { label: AiLabel; kind: string; points: number[] }
 
 /** Soma tremor suave extra (fração da diagonal), deixando o traço mais "à mão" e ambíguo. */
@@ -19,6 +19,12 @@ const star = (cx: number, cy: number, r: number): Vec2[] =>
     return [cx + rr * Math.cos(a), cy + rr * Math.sin(a)] as Vec2;
   });
 
+const pentagon = (cx: number, cy: number, r: number): Vec2[] =>
+  Array.from({ length: 5 }, (_, i) => {
+    const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)] as Vec2;
+  });
+
 const eight = (cx: number, cy: number, r: number): Vec2[] =>
   Array.from({ length: 120 }, (_, i) => {
     const t = (i / 120) * Math.PI * 2;
@@ -32,12 +38,12 @@ export function buildDataset(perClass = 30, seed = 21): Item[] {
   const r = rng(seed);
   const out: Item[] = [];
   const add = (label: AiLabel, kind: string, pts: number[]) => out.push({ label, kind, points: pts });
-  const pos: [Label, AiLabel][] = [['ellipse', 'circle'], ['rectangle', 'rectangle'], ['triangle', 'triangle']];
+  const pos: [Label, AiLabel][] = [['ellipse', 'circle'], ['rectangle', 'rectangle'], ['triangle', 'triangle'], ['diamond', 'diamond']];
   for (const [src, label] of pos) for (let i = 0; i < perClass; i++) add(label, src, shake(sample(src, r), SHAKE[i % 3]!, i));
   for (let i = 0; i < perClass; i++) {
     const x = r() * 300, y = r() * 300, s = 80 + r() * 200;
     const k = i % 3;
-    if (k === 0) add('none', 'diamond', shake(sample('diamond', r), 0.015, i));
+    if (k === 0) add('none', 'pentagon', trace(pentagon(x, y, s), true, r, { wobble: 0.015 }));
     else if (k === 1) add('none', 'star', trace(star(x, y, s), true, r, { wobble: 0.015 }));
     else add('none', 'eight', trace(eight(x, y, s), true, r, { wobble: 0.01, overshoot: 0.02 }));
   }

@@ -2,7 +2,7 @@ import type { ShapeRequest, ShapeVerdict } from '../../../server/types';
 import { config } from '../config';
 import { AiError, type AiProvider } from './provider';
 
-const SHAPES = new Set(['circle', 'triangle', 'rectangle', 'none']);
+const SHAPES = new Set(['circle', 'triangle', 'rectangle', 'diamond', 'none']);
 const unit = (v: unknown) => typeof v === 'number' && v >= 0 && v <= 1;
 
 /** Fala com o proxy do Pincel (a chave do JEV nunca chega aqui). */

@@ -24,7 +24,7 @@ export interface ShapeRequest {
   outline: [number, number][];
 }
 
-export type AiShape = 'circle' | 'triangle' | 'rectangle' | 'none';
+export type AiShape = 'circle' | 'triangle' | 'rectangle' | 'diamond' | 'none';
 
 export interface ShapeVerdict {
   shape: AiShape;

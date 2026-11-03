@@ -13,6 +13,7 @@ export const config = {
   aiMaxGap: 0.22, // lacuna máxima início–fim / comprimento para valer a pena perguntar
   aiDeliberate: 0.5, // nota mínima de "foi uma forma proposital?"
   aiMinFit: 0.3, // encaixe local mínimo no tipo que a IA escolheu (a IA não força geometria absurda)
+  aiMinFitByType: { diamond: 0.7 } as Record<string, number>, // o losango se confunde com círculo trêmulo: exige encaixe maior
   aiTimeoutMs: 3000,
   aiMaxConcurrent: 2,
   aiBreakerFailures: 3, // falhas seguidas que pausam a IA
@@ -23,5 +24,5 @@ export const config = {
   cadenceRadiusPx: 60,
   ambiguityGap: 0.1,
   closedGap: 0.1, // distância início–fim / comprimento
-  beautify: { angleDeg: 6, squareRatio: 0.1, idealSquareRatio: 0.2, equilateralTol: 0.12, verticalBias: 0.3, alignPx: 8, sizeMatch: 0.06, neighborPx: 200 },
+  beautify: { angleDeg: 6, squareRatio: 0.1, idealSquareRatio: 0.2, equilateralTol: 0.12, verticalBias: 0.3, rightAngleDeg: 10, rightAxisMin: 0.85, alignPx: 8, sizeMatch: 0.06, neighborPx: 200 },
 };

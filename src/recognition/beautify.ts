@@ -1,4 +1,4 @@
-import type { Box, Line, Shape, Vec2, WhiteboardObject } from '../core/types';
+import type { Box, Line, Shape, Triangle, Vec2, WhiteboardObject } from '../core/types';
 import { geomBox, scaleObject, translate } from '../shapes';
 import { connectLine } from '../core/bindings';
 import { settings } from '../settings/settings';
@@ -22,6 +22,29 @@ const snapLine = (s: Shape): Shape => {
 };
 
 /**
+ * Triângulo com um ângulo reto (e catetos mais ou menos alinhados aos eixos) fica retângulo de
+ * verdade: catetos horizontal e vertical, canto do ângulo reto no mesmo quadrante do desenho.
+ */
+const rightTriangle = (s: Triangle, v: Triangle['vertices']): Triangle | null => {
+  const tol = Math.sin((config.beautify.rightAngleDeg * Math.PI) / 180);
+  for (let i = 0; i < 3; i++) {
+    const r = v[i]!, a = v[(i + 1) % 3]!, c = v[(i + 2) % 3]!;
+    const u: Vec2 = [a[0] - r[0], a[1] - r[1]], w: Vec2 = [c[0] - r[0], c[1] - r[1]];
+    const lu = Math.hypot(u[0], u[1]), lw = Math.hypot(w[0], w[1]);
+    if (lu < 1e-6 || lw < 1e-6 || Math.abs(u[0] * w[0] + u[1] * w[1]) / (lu * lw) > tol) continue;
+    // u na horizontal e w na vertical, ou o contrário: vale o que menos gira
+    const uh = Math.abs(u[0]) + Math.abs(w[1]), uv = Math.abs(u[1]) + Math.abs(w[0]);
+    if (Math.max(uh, uv) / (lu + lw) < config.beautify.rightAxisMin) continue;
+    const [hx, hy, lx, ly] = uh >= uv ? [u[0], w[1], lu, lw] : [w[0], u[1], lw, lu];
+    const sx = Math.sign(hx) || 1, sy = Math.sign(hy) || 1;
+    const [cx, cy] = center(geomBox(s));
+    const o: Vec2 = [cx - (sx * lx) / 2, cy - (sy * ly) / 2];
+    return { ...s, vertices: [o, [o[0] + sx * lx, o[1]], [o[0], o[1] + sy * ly]] };
+  }
+  return null;
+};
+
+/**
  * Triângulo torto vira isósceles com a base alinhada a um eixo (ponta para cima, baixo, esquerda
  * ou direita, a mais próxima da desenhada) e equilátero se já estava perto disso. Mantém centro,
  * base e altura aproximados do desenho.
@@ -30,6 +53,8 @@ const idealTriangle = (s: Shape): Shape => {
   if (s.type !== 'triangle') return s;
   const v = s.vertices;
   const d = (p: Vec2, q: Vec2) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+  const right = rightTriangle(s, v);
+  if (right) return right;
   // a ponta é o vértice cujos dois lados são mais parecidos; na dúvida, prefere ponta vertical
   const mean = (d(v[0], v[1]) + d(v[1], v[2]) + d(v[2], v[0])) / 3;
   let apex = 0, best = Infinity;

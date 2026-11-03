@@ -20,7 +20,7 @@ type Verdict = import('../../../server/types').ShapeVerdict;
 const pct = (a: number, b: number) => (b ? `${((100 * a) / b).toFixed(1)}%` : '—');
 const out = (s = '') => process.stdout.write(s + '\n');
 
-test.skipIf(!mode)('calibração do JEV: formas básicas', async () => {
+test.skipIf(!mode)('calibração do JEV: formas básicas + losango', async () => {
   const env = loadEnv('development', process.cwd(), '');
   const key = process.env.TYPESAFE_API_KEY ?? env.TYPESAFE_API_KEY;
   if (mode === '1') expect(key, 'defina TYPESAFE_API_KEY em .env.local').toBeTruthy();
@@ -28,7 +28,7 @@ test.skipIf(!mode)('calibração do JEV: formas básicas', async () => {
   const deps = { log: () => {}, fetch: mode === 'mock' ? fakeFetch : undefined };
 
   const items = buildDataset(Number(process.env.JEV_N) || 40);
-  const rows: { truth: string; v: Verdict; ms: number }[] = [];
+  const rows: { truth: string; kind: string; v: Verdict; ms: number }[] = [];
   let ineligible = 0, errors = 0;
   for (const it of items) {
     const req = prepareAiRequest(it.points);
@@ -38,16 +38,21 @@ test.skipIf(!mode)('calibração do JEV: formas básicas', async () => {
     const res = await handleShapeRequest(new Request('http://x/api/shape', { method: 'POST', body: JSON.stringify(req) }), proxyEnv, deps);
     const ms = performance.now() - t0;
     if (res.status !== 200) { errors++; out(`  erro ${res.status} ${(await res.text()).slice(0, 120)}`); continue; }
-    rows.push({ truth: it.label, v: (await res.json()) as Verdict, ms });
+    rows.push({ truth: it.label, kind: it.kind, v: (await res.json()) as Verdict, ms });
   }
 
   out(`\n=== Calibração (${mode === 'mock' ? 'SIMULADO' : 'JEV real'}) · ${rows.length} traços · ${ineligible} inelegíveis · ${errors} erros`);
   out(`modelo: ${rows[0]?.v.model}`);
 
-  const labels = ['circle', 'rectangle', 'triangle', 'none'];
+  const labels = ['circle', 'rectangle', 'triangle', 'diamond', 'none'];
   out('\nMatriz de confusão (linha = verdade, coluna = veredito do JEV):');
   out('            ' + labels.map((l) => l.padStart(10)).join(''));
   for (const t of labels) out(t.padEnd(12) + labels.map((l) => String(rows.filter((r) => r.truth === t && r.v.shape === l).length).padStart(10)).join(''));
+
+  const wrong: Record<string, number[]> = {};
+  for (const r of rows) if (r.truth !== r.v.shape) (wrong[`${r.kind}→${r.v.shape}`] ??= []).push(r.v.confidence);
+  out('\nErros por tipo de traço (verdade→veredito: quantidade, confiança média):');
+  for (const [k, c] of Object.entries(wrong)) out(`  ${k.padEnd(22)} ${String(c.length).padStart(3)}  conf ${(c.reduce((a, b) => a + b, 0) / c.length).toFixed(2)}`);
 
   const positives = rows.filter((r) => r.truth !== 'none').length;
   out('\nLimiares (aceita se shape≠none, confiança ≥ c e proposital ≥ d):');

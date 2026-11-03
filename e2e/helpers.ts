@@ -42,3 +42,7 @@ export const objects = (page: Page) => page.evaluate(() => (window as any).__pin
 /** Retângulo com tremor: o reconhecedor local sozinho não converte ao soltar (ambíguo para a IA). */
 export const wobblyRect = (x: number, y: number, w: number, h: number, amp = 5) =>
   rect(x, y, w, h).map(([px, py], i) => [px + Math.sin(i * 0.5) * amp, py + Math.cos(i * 0.4) * amp] as P);
+
+/** Losango com tremor (mesma ideia do wobblyRect): o local sozinho não converte ao soltar. */
+export const wobblyDiamond = (cx: number, cy: number, w: number, h: number, amp = 11) =>
+  along([[cx, cy - h / 2], [cx + w / 2, cy], [cx, cy + h / 2], [cx - w / 2, cy]], 22).map(([px, py], i) => [px + Math.sin(i * 0.5) * amp, py + Math.cos(i * 0.4) * amp] as P);
