@@ -83,7 +83,9 @@ say "Publicando dist/ em ${DEPLOY_DIR}..."
 $SUDO mkdir -p "$DEPLOY_DIR"
 # --delete remove do destino os arquivos do build anterior (o Vite troca o hash dos nomes a cada build);
 # --delay-updates troca todos de uma vez no fim, para o navegador não ver index.html novo com assets velhos.
-$SUDO rsync -a --delete --delay-updates dist/ "$DEPLOY_DIR/"
+# --chmod fixa as permissões no destino (pastas 755, arquivos 644): o nginx roda em outro usuário dentro
+# do container e daria 403 se o build herdasse um umask restritivo (ex.: 077) da sessão de quem publica.
+$SUDO rsync -a --delete --delay-updates --chmod=D755,F644 dist/ "$DEPLOY_DIR/"
 say "Site publicado em ${DEPLOY_DIR}."
 
 if command -v docker >/dev/null && docker inspect "$NGINX_CONTAINER" >/dev/null 2>&1; then
