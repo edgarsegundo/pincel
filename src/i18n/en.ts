@@ -1,0 +1,26 @@
+import type { Dict } from './pt-BR';
+
+export const en: { [K in keyof Dict]: string } = {
+  hint: 'Draw anything · or just start typing',
+  'color.ink': 'Ink', 'color.gray': 'Gray', 'color.red': 'Red', 'color.orange': 'Orange',
+  'color.yellow': 'Yellow', 'color.green': 'Green', 'color.blue': 'Blue', 'color.violet': 'Violet',
+  'size.s': 'Thin', 'size.m': 'Medium', 'size.l': 'Thick',
+  'fill.none': 'No fill', 'fill.solid': 'Solid fill', 'fill.hachure': 'Hatched fill',
+  'arrow.none': 'No arrow', 'arrow.end': 'Arrow at end', 'arrow.both': 'Arrow at both ends',
+  undo: 'Undo (⌘Z)', redo: 'Redo (⇧⌘Z)', clear: 'Clear board', cleared: 'Board cleared', undoAction: 'Undo',
+  auto: 'Auto-straighten shapes (⌥A)', style: 'Shape style', theme: 'Toggle theme', settings: 'Settings',
+  duplicate: 'Duplicate (⌘D)', delete: 'Delete (Delete)',
+  menu: 'File', 'export.png': 'Export PNG', 'export.json': 'Export JSON', import: 'Import JSON',
+  imported: 'Board imported', importError: 'Invalid file: the board was not changed', zoomFit: 'Fit content (⌘1)',
+  'settings.title': 'Settings', 'settings.advanced': 'Advanced', 'settings.reset': 'Restore defaults', 'settings.close': 'Close',
+  'field.language': 'Language', 'field.theme': 'Theme', 'field.grid': 'Dot grid', 'field.shapeStyle': 'Shape style',
+  'field.autoStraighten': 'Auto-straighten on release', 'field.scribbleErase': 'Scribble to erase',
+  'field.connectors': 'Automatic connectors', 'field.learning': 'Learn from my corrections',
+  'field.snapAngle': 'Tidy: line angle', 'field.snapProportion': 'Tidy: squares and circles',
+  'field.snapSize': 'Tidy: match sizes', 'field.snapAlign': 'Tidy: align with neighbors',
+  'field.holdMs': 'Hold time (ms)', 'field.releaseThreshold': 'Release threshold', 'field.holdThreshold': 'Hold threshold',
+  'field.aiAssist': 'AI help for ambiguous shapes', 'field.aiThreshold': 'Minimum AI confidence',
+  'field.morphMs': 'Animation duration (ms)', 'field.roughness': 'Hand-drawn roughness',
+  'opt.auto': 'Automatic', 'opt.light': 'Light', 'opt.dark': 'Dark', 'opt.rough': 'Hand-drawn', 'opt.clean': 'Clean',
+  'opt.pt-BR': 'Português (Brasil)', 'opt.en': 'English',
+};

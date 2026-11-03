@@ -1,0 +1,4 @@
+# O container só precisa de server/ e package.json.
+*
+!package.json
+!server

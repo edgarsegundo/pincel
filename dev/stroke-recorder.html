@@ -1,0 +1,45 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Pincel · gravador de traços</title>
+<style>
+  body { margin: 0; font: 14px system-ui; display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid #ddd; }
+  canvas { width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+</style>
+<header>
+  <label>Rótulo
+    <select id="label">
+      <option>line</option><option>rectangle</option><option>diamond</option><option>ellipse</option><option>triangle</option>
+      <option value="none">none (NÃO deve converter)</option>
+    </select>
+  </label>
+  <button id="undo">Desfazer último</button>
+  <button id="save">Baixar JSON</button>
+  <span id="count">0 traços</span>
+</header>
+<canvas id="c"></canvas>
+<script>
+  // Desenhe vários exemplos de cada rótulo. O JSON baixado vai para tests/strokes/ e alimenta a calibração.
+  const c = document.getElementById('c'), ctx = c.getContext('2d');
+  const strokes = [];
+  let cur = null;
+  const fit = () => { c.width = c.clientWidth; c.height = c.clientHeight; redraw(); };
+  const redraw = () => {
+    ctx.clearRect(0, 0, c.width, c.height);
+    ctx.lineWidth = 2; ctx.lineCap = 'round';
+    for (const s of [...strokes, cur].filter(Boolean)) {
+      ctx.beginPath(); s.points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke();
+    }
+    document.getElementById('count').textContent = strokes.length + ' traços';
+  };
+  c.onpointerdown = (e) => { c.setPointerCapture(e.pointerId); cur = { label: label.value, points: [[e.offsetX, e.offsetY]] }; };
+  c.onpointermove = (e) => { if (cur) { cur.points.push([e.offsetX, e.offsetY]); redraw(); } };
+  c.onpointerup = () => { if (cur && cur.points.length > 2) strokes.push(cur); cur = null; redraw(); };
+  undo.onclick = () => { strokes.pop(); redraw(); };
+  save.onclick = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(strokes)], { type: 'application/json' }));
+    a.download = 'strokes-' + Date.now() + '.json'; a.click();
+  };
+  addEventListener('resize', fit); fit();
+</script>

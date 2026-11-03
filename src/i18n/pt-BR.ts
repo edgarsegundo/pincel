@@ -1,0 +1,26 @@
+export const ptBR = {
+  hint: 'Desenhe qualquer coisa · ou comece a digitar',
+  'color.ink': 'Tinta', 'color.gray': 'Cinza', 'color.red': 'Vermelho', 'color.orange': 'Laranja',
+  'color.yellow': 'Amarelo', 'color.green': 'Verde', 'color.blue': 'Azul', 'color.violet': 'Violeta',
+  'size.s': 'Fino', 'size.m': 'Médio', 'size.l': 'Grosso',
+  'fill.none': 'Sem preenchimento', 'fill.solid': 'Preenchimento sólido', 'fill.hachure': 'Preenchimento hachurado',
+  'arrow.none': 'Sem seta', 'arrow.end': 'Seta no fim', 'arrow.both': 'Seta nas duas pontas',
+  undo: 'Desfazer (⌘Z)', redo: 'Refazer (⇧⌘Z)', clear: 'Limpar quadro', cleared: 'Quadro limpo', undoAction: 'Desfazer',
+  auto: 'Auto-endireitar formas (⌥A)', style: 'Estilo das formas', theme: 'Alternar tema', settings: 'Configurações',
+  duplicate: 'Duplicar (⌘D)', delete: 'Apagar (Delete)',
+  menu: 'Arquivo', 'export.png': 'Exportar PNG', 'export.json': 'Exportar JSON', import: 'Importar JSON',
+  imported: 'Quadro importado', importError: 'Arquivo inválido: o quadro não foi alterado', zoomFit: 'Enquadrar o conteúdo (⌘1)',
+  'settings.title': 'Configurações', 'settings.advanced': 'Avançado', 'settings.reset': 'Restaurar padrões', 'settings.close': 'Fechar',
+  'field.language': 'Idioma', 'field.theme': 'Tema', 'field.grid': 'Grade de pontos', 'field.shapeStyle': 'Estilo das formas',
+  'field.autoStraighten': 'Auto-endireitar ao soltar', 'field.scribbleErase': 'Rabiscar para apagar',
+  'field.connectors': 'Conectores automáticos', 'field.learning': 'Aprender com minhas correções',
+  'field.snapAngle': 'Ajuste: ângulo das linhas', 'field.snapProportion': 'Ajuste: quadrado e círculo',
+  'field.snapSize': 'Ajuste: igualar tamanhos', 'field.snapAlign': 'Ajuste: alinhar com vizinhas',
+  'field.holdMs': 'Tempo de segurar (ms)', 'field.releaseThreshold': 'Limiar ao soltar', 'field.holdThreshold': 'Limiar ao segurar',
+  'field.aiAssist': 'Ajuda da IA para formas ambíguas', 'field.aiThreshold': 'Confiança mínima da IA',
+  'field.morphMs': 'Duração da animação (ms)', 'field.roughness': 'Irregularidade do traço à mão',
+  'opt.auto': 'Automático', 'opt.light': 'Claro', 'opt.dark': 'Escuro', 'opt.rough': 'Desenhado à mão', 'opt.clean': 'Limpo',
+  'opt.pt-BR': 'Português (Brasil)', 'opt.en': 'English',
+} as const;
+
+export type Dict = typeof ptBR;

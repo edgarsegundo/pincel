@@ -1,0 +1,26 @@
+# Proxy do JEV (a chave fica aqui, nunca no navegador). O site é estático: ver rebuild.sh.
+# O nginx (projeto reverse-proxy-config) fala com este container pelo nome, na rede compartilhada.
+services:
+  pincel_proxy:
+    build: .
+    container_name: pincel_proxy
+    restart: unless-stopped
+    env_file: .env.production        # TYPESAFE_API_KEY=..., JEV_MODEL=... (ver .env.example)
+    environment:
+      PORT: "8787"
+      # Atrás do nginx, o limite por IP usa o último X-Forwarded-For (o que o NGINX escreveu).
+      # Sem isso todos os visitantes dividiriam um único balde de 40 chamadas por minuto.
+      TRUST_PROXY: "1"
+    expose:
+      - "8787"                       # sem "ports:" de propósito: só quem está na rede do nginx alcança
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    external: true
+    name: nginx-proxy-network
