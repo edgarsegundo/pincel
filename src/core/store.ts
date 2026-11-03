@@ -9,6 +9,7 @@ export interface BoardState {
   size: Size;
   fill: Fill;
   settingsOpen: boolean;
+  trainingOpen: boolean;
   toast: 'cleared' | 'imported' | 'importError' | null;
   selection: string[];
   past: WhiteboardObject[][];
@@ -22,6 +23,7 @@ export const store = createStore<BoardState>(() => ({
   size: 'm',
   fill: 'none',
   settingsOpen: false,
+  trainingOpen: false,
   toast: null,
   selection: [],
   past: [],

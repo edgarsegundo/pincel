@@ -51,6 +51,7 @@ export function SettingsSheet() {
         <details>
           <summary>{t('settings.advanced')}</summary>
           {schema.filter((f) => f.group === 'advanced').map((f) => <Row f={f} />)}
+          <button class="link" onClick={() => store.setState({ settingsOpen: false, trainingOpen: true })}>{t('training.link')}</button>
         </details>
         <button class="link" onClick={resetSettings}>{t('settings.reset')}</button>
       </div>

@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'preact/compat';
+import { lazy, Suspense, useSyncExternalStore } from 'preact/compat';
 import { clearBoard, redo, store, undo } from '../core/store';
 import type { ColorToken, Fill, Size } from '../core/types';
 import { t, type Key } from '../i18n';
@@ -8,6 +8,8 @@ import { ContextBar } from './ContextBar';
 import { Menu } from './Menu';
 import { FillHachure, FillNone, FillSolid, Gear, Moon, Pencil, Redo, Square, Sun, Trash, Undo, Wand } from './icons';
 import { SettingsSheet } from './SettingsSheet';
+
+const TrainingSheet = lazy(() => import('./TrainingSheet')); // só baixa quando o usuário abre o treinamento
 
 const COLORS: ColorToken[] = ['ink', 'gray', 'red', 'orange', 'yellow', 'green', 'blue', 'violet'];
 const SIZES: Size[] = ['s', 'm', 'l'];
@@ -28,6 +30,7 @@ export function App() {
   const canRedo = useStore((s) => s.future.length > 0);
   const empty = useStore((s) => s.objects.length === 0);
   const toast = useStore((s) => s.toast);
+  const training = useStore((s) => s.trainingOpen);
   const zoomPct = useStore((s) => Math.round(s.viewport.zoom * 100));
   const auto = useSettings((s) => s.autoStraighten);
   const rough = useSettings((s) => s.shapeStyle === 'rough');
@@ -72,6 +75,7 @@ export function App() {
       )}
       <button class="zoom" title={t('zoomFit')} onClick={fitContent}>{zoomPct}%</button>
       <SettingsSheet />
+      {training && <Suspense fallback={null}><TrainingSheet /></Suspense>}
     </>
   );
 }

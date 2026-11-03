@@ -1,4 +1,4 @@
-/** Pontos de partida; calibrar com o conjunto de traços (dev/stroke-recorder.html). */
+/** Pontos de partida; o usuário pode calibrá-los em Configurações → Avançado → Treinamento. */
 import { settings } from '../settings/settings';
 
 export const config = {
@@ -11,7 +11,7 @@ export const config = {
   holdMovePx: 3,
   // IA (JEV): só traços quase fechados e plausíveis são enviados; a resposta é verificada localmente.
   aiMaxGap: 0.22, // lacuna máxima início–fim / comprimento para valer a pena perguntar
-  aiDeliberate: 0.6, // nota mínima de "foi uma forma proposital?"
+  aiDeliberate: 0.5, // nota mínima de "foi uma forma proposital?"
   aiMinFit: 0.3, // encaixe local mínimo no tipo que a IA escolheu (a IA não força geometria absurda)
   aiTimeoutMs: 3000,
   aiMaxConcurrent: 2,
@@ -23,5 +23,5 @@ export const config = {
   cadenceRadiusPx: 60,
   ambiguityGap: 0.1,
   closedGap: 0.1, // distância início–fim / comprimento
-  beautify: { angleDeg: 6, squareRatio: 0.1, alignPx: 8, sizeMatch: 0.06, neighborPx: 200 },
+  beautify: { angleDeg: 6, squareRatio: 0.1, idealSquareRatio: 0.2, equilateralTol: 0.12, verticalBias: 0.3, alignPx: 8, sizeMatch: 0.06, neighborPx: 200 },
 };

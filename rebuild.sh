@@ -1,9 +1,9 @@
 #!/bin/bash
 set -eo pipefail   # sem -u de propósito: o nvm.sh usa variáveis não definidas
 
-# Publica o Pincel em https://pincel.ea.tv.br (rodar NA VPS, dentro do repositório).
+# Publica o Pincel em https://lousa.ea.tv.br (rodar NA VPS, dentro do repositório).
 #
-#   1. build do app (Vite) e rsync para /var/www/pincel.ea.tv.br — o nginx serve direto do
+#   1. build do app (Vite) e rsync para /var/www/lousa.ea.tv.br — o nginx serve direto do
 #      host por bind mount (ver reverse-proxy-config/docker-compose.yml), sem container.
 #   2. (re)cria o container do proxy do JEV (pincel_proxy) na rede do nginx.
 #   3. recarrega o nginx e faz um teste de fumaça no site publicado.
@@ -14,14 +14,14 @@ set -eo pipefail   # sem -u de propósito: o nvm.sh usa variáveis não definida
 # Variáveis (todas opcionais):
 #   SKIP_TESTS=1    pula typecheck + testes unitários
 #   SKIP_PROXY=1    publica só o site (não mexe no container do proxy)
-#   DOMAIN=...      padrão pincel.ea.tv.br
+#   DOMAIN=...      padrão lousa.ea.tv.br
 #   DEPLOY_DIR=...  padrão /var/www/$DOMAIN
 #   NGINX_CONTAINER=...  padrão "nginx"
 #   SUDO=           (vazio) para não usar sudo quando o usuário já é dono do DEPLOY_DIR
 #
 # Primeira vez? Veja o checklist impresso no fim (DNS, certificado, bind mount, .env.production).
 
-DOMAIN="${DOMAIN:-pincel.ea.tv.br}"
+DOMAIN="${DOMAIN:-lousa.ea.tv.br}"
 DEPLOY_DIR="${DEPLOY_DIR:-/var/www/${DOMAIN}}"
 NGINX_CONTAINER="${NGINX_CONTAINER:-nginx}"
 SUDO="${SUDO-sudo}"
@@ -174,7 +174,7 @@ Checklist da PRIMEIRA publicação:
   1. DNS: registro A de ${DOMAIN} apontando para o IP da VPS.
   2. Certificado: no reverse-proxy-config, ./create_ssl.sh (ou --only-certificate) para ${DOMAIN}.
   3. nginx: sites/${DOMAIN}.conf com root ${DEPLOY_DIR}, sw.js sem cache e o location /api/shape
-     (referência pronta em deploy/nginx/pincel.ea.tv.br.conf) + o bind mount de ${DEPLOY_DIR} no docker-compose do nginx.
+     (referência pronta em deploy/nginx/lousa.ea.tv.br.conf) + o bind mount de ${DEPLOY_DIR} no docker-compose do nginx.
   4. Proxy: .env.production (neste diretório) com TYPESAFE_API_KEY=... e, se quiser, JEV_MODEL=...
 EOF
 fi

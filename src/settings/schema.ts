@@ -9,6 +9,7 @@ export interface Settings {
   learning: boolean;
   aiAssist: boolean;
   aiThreshold: number;
+  idealShapes: boolean;
   snapAngle: boolean;
   snapProportion: boolean;
   snapSize: boolean;
@@ -39,7 +40,8 @@ export const defaults = (): Settings => ({
   connectors: true,
   learning: true,
   aiAssist: true,
-  aiThreshold: 0.7,
+  aiThreshold: 0.6,
+  idealShapes: false,
   snapAngle: true,
   snapProportion: true,
   snapSize: true,
@@ -65,6 +67,7 @@ export const schema: Field[] = [
   { key: 'connectors', kind: 'toggle', group: 'basic' },
   { key: 'learning', kind: 'toggle', group: 'basic' },
   { key: 'aiAssist', kind: 'toggle', group: 'basic' },
+  { key: 'idealShapes', kind: 'toggle', group: 'basic' },
   { key: 'snapAngle', kind: 'toggle', group: 'basic' },
   { key: 'snapProportion', kind: 'toggle', group: 'basic' },
   { key: 'snapSize', kind: 'toggle', group: 'basic' },

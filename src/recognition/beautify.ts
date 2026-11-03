@@ -21,12 +21,53 @@ const snapLine = (s: Shape): Shape => {
   return { ...s, to: [from[0] + len * Math.cos(snapped), from[1] + len * Math.sin(snapped)] } as Line;
 };
 
-/** Retângulo/losango/elipse quase quadrados viram quadrado/círculo. */
+/**
+ * Triângulo torto vira isósceles com a base alinhada a um eixo (ponta para cima, baixo, esquerda
+ * ou direita, a mais próxima da desenhada) e equilátero se já estava perto disso. Mantém centro,
+ * base e altura aproximados do desenho.
+ */
+const idealTriangle = (s: Shape): Shape => {
+  if (s.type !== 'triangle') return s;
+  const v = s.vertices;
+  const d = (p: Vec2, q: Vec2) => Math.hypot(p[0] - q[0], p[1] - q[1]);
+  // a ponta é o vértice cujos dois lados são mais parecidos; na dúvida, prefere ponta vertical
+  const mean = (d(v[0], v[1]) + d(v[1], v[2]) + d(v[2], v[0])) / 3;
+  let apex = 0, best = Infinity;
+  for (let i = 0; i < 3; i++) {
+    const q = v[i]!, a = v[(i + 1) % 3]!, c = v[(i + 2) % 3]!;
+    const toApex: Vec2 = [q[0] - (a[0] + c[0]) / 2, q[1] - (a[1] + c[1]) / 2];
+    const sideways = Math.abs(toApex[0]) / (Math.hypot(toApex[0], toApex[1]) || 1);
+    const cost = Math.abs(d(q, a) - d(q, c)) / mean + config.beautify.verticalBias * sideways;
+    if (cost < best) { best = cost; apex = i; }
+  }
+  const p = v[apex]!, a = v[(apex + 1) % 3]!, c = v[(apex + 2) % 3]!;
+  const base = d(a, c);
+  if (base < 1e-6) return s;
+  const mid: Vec2 = [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2];
+  const height = Math.abs((c[0] - a[0]) * (p[1] - a[1]) - (p[0] - a[0]) * (c[1] - a[1])) / base;
+  const h = Math.abs(height / base - Math.sqrt(3) / 2) <= (Math.sqrt(3) / 2) * config.beautify.equilateralTol ? (base * Math.sqrt(3)) / 2 : height;
+  const dx = p[0] - mid[0], dy = p[1] - mid[1];
+  const dir: Vec2 = Math.abs(dy) >= Math.abs(dx) ? [0, Math.sign(dy) || -1] : [Math.sign(dx), 0];
+  const perp: Vec2 = [-dir[1], dir[0]];
+  const bb = geomBox(s);
+  const [cx, cy] = center(bb);
+  const baseMid: Vec2 = [cx - (dir[0] * h) / 2, cy - (dir[1] * h) / 2];
+  return {
+    ...s,
+    vertices: [
+      [cx + (dir[0] * h) / 2, cy + (dir[1] * h) / 2],
+      [baseMid[0] + (perp[0] * base) / 2, baseMid[1] + (perp[1] * base) / 2],
+      [baseMid[0] - (perp[0] * base) / 2, baseMid[1] - (perp[1] * base) / 2],
+    ],
+  };
+};
+
+/** Retângulo/losango/elipse quase quadrados viram quadrado/círculo (com folga maior nas formas perfeitas). */
 const snapProportion = (s: Shape): Shape => {
   if (s.type === 'line' || s.type === 'triangle') return s;
   const b = geomBox(s);
   const r = b.w / b.h;
-  const k = config.beautify.squareRatio;
+  const k = settings.getState().idealShapes ? config.beautify.idealSquareRatio : config.beautify.squareRatio;
   if (r < 1 - k || r > 1 + k) return s;
   const avg = (b.w + b.h) / 2;
   return scaleObject(s, center(b), avg / b.w, avg / b.h);
@@ -76,7 +117,8 @@ function neighbors(s: Shape, others: WhiteboardObject[], zoom: number): Shape[] 
 export function beautify(shape: Shape, ctx: BeautifyCtx): Shape {
   const on = settings.getState();
   let s = shape;
-  if (on.snapProportion) s = snapProportion(s);
+  if (on.idealShapes) s = idealTriangle(s);
+  if (on.snapProportion || on.idealShapes) s = snapProportion(s);
   if (on.snapAngle) s = snapLine(s);
   const near = neighbors(s, ctx.others, ctx.zoom);
   if (on.snapSize) s = matchSize(s, near, ctx);

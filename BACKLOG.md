@@ -8,20 +8,20 @@ Legenda: 👤 depende de você · 🤖 posso fazer sozinho (é só pedir) · ⏱
 
 ## 1. Fazer primeiro (quando estiver em casa)
 
-### 1.1 👤 Ligar e calibrar a IA com o JEV real ⏱ 15 min
+### 1.1 ✅ (feito em 03/11/2026) Ligar e calibrar a IA com o JEV real ⏱ 15 min
 
 É o passo que destrava a v2. Hoje só foi testado com um JEV simulado.
 
-- [ ] Copiar `.env.example` para `.env.local` e preencher `TYPESAFE_API_KEY=` (o arquivo é ignorado pelo git; a chave nunca vai ao navegador).
-- [ ] `npm run jev:models` — confirma se o modelo padrão `jev-1.13.0` (o do projeto emprego) ainda existe. Se não, defina `JEV_MODEL=` no `.env.local` com um da lista.
-- [ ] `npm run jev:calibrate` — chama o JEV de verdade com ~160 traços rotulados e imprime: matriz de confusão, tabela de limiares (precisão × cobertura), tokens, custo e latência. Use `JEV_N=60` para mais traços por classe.
-- [ ] Me mandar o resultado impresso. Com ele eu:
+- [x] Copiar `.env.example` para `.env.local` e preencher `TYPESAFE_API_KEY=` (o arquivo é ignorado pelo git; a chave nunca vai ao navegador).
+- [x] `npm run jev:models` — confirma se o modelo padrão `jev-1.13.0` (o do projeto emprego) ainda existe. Se não, defina `JEV_MODEL=` no `.env.local` com um da lista.
+- [x] `npm run jev:calibrate` — chama o JEV de verdade com ~160 traços rotulados e imprime: matriz de confusão, tabela de limiares (precisão × cobertura), tokens, custo e latência. Use `JEV_N=60` para mais traços por classe.
+- [x] Resultado (240 traços, JEV real `jev-1.13.0`, 0 erros, 100% precisão, p50 206 ms, ≈US$0,01): limiares ajustados para `aiThreshold` 0,60 / `aiDeliberate` 0,50. O modelo `jev-1.13.0` não aparece em `/v1/models` (só `jev-latest`/`jev-preview`) mas responde. Recalibrar com traços reais (1.3). Plano original:
   - 🤖 ajusto `aiThreshold` (hoje 0,70) e `aiDeliberate` (hoje 0,60);
   - 🤖 reescrevo os textos das perguntas em `server/jev.ts` se a precisão ficar abaixo de 97% (lembre de subir `PROMPT_VERSION`);
   - 🤖 corrijo qualquer diferença entre o formato real da API e o que a documentação diz (a única coisa que ficou sem validar).
 - [ ] `npm run dev`, desenhar um retângulo bem torto e soltar. A IA deve converter em segundo plano em < 300 ms. Se aparecer um ponto azul pulsando e nada acontecer, o proxy está sem chave ou o modelo não existe (veja o terminal do `npm run dev`).
 
-### 1.2 👤 Testar à mão o "feeling" do MVP ⏱ 20 min
+### 1.2 ✅ (feito em 03/11/2026) Testar à mão o "feeling" do MVP ⏱ 20 min
 
 Nada disso foi usado por uma pessoa de verdade ainda (só por testes automáticos).
 
@@ -33,25 +33,24 @@ Nada disso foi usado por uma pessoa de verdade ainda (só por testes automático
 - [ ] Rabiscar para apagar apaga sem querer em algum caso?
 - [ ] Anotar o que incomoda e me mandar: eu ajusto limiares e tempos.
 
-### 1.3 👤 Gravar traços reais para calibrar o reconhecedor local ⏱ 30 min
+### 1.3 ✅ Treinamento do reconhecimento (virou recurso do app)
 
-Os números de acerto (98,7%) vêm de traços sintéticos, mais limpos que os seus.
+Decidido em 03/11/2026: o Pincel nasce com os limiares padrão e **não exige** gravar traços. Quem sentir imprecisão calibra no próprio app: **Configurações → Avançado → "Treinar o reconhecimento de formas…"**.
 
-- [ ] Abrir `dev/stroke-recorder.html` no navegador (arraste o arquivo para a janela ou use `npx vite` e abra `/dev/stroke-recorder.html`).
-- [ ] Gravar ~40 exemplos de cada rótulo: `line`, `rectangle`, `diamond`, `ellipse`, `triangle`.
-- [ ] Gravar ~60 exemplos de **`none`** (o que NÃO deve converter): letras, números, "o" escrito, rabiscos, espirais, ticks, curvas abertas, coração, estrela. Esse é o mais importante.
-- [ ] Baixar o JSON e me passar o arquivo (ou colocar em `tests/strokes/`).
-- [ ] 🤖 Eu calibro os limiares e meço acerto e falsos positivos com os seus traços (meta: ≥ 90% de acerto e ≤ 3% de falsos positivos).
+- [x] Tela de treinamento dentro do app (carregada só ao abrir, ≈2,5 KB gzip), calibração local por forma, comparação antes/depois, "Ativar calibração" e "Voltar ao padrão", exportar/importar JSON. Tudo fica no aparelho.
+- [x] Trava: só libera a ativação com ≥ 20 exemplos de "Não é forma" e ≥ 5 de alguma forma (sem isso a calibração poderia piorar o app).
+- [ ] 👤 (opcional, quando quiser) Experimentar a tela com o seu jeito de desenhar e dizer se a explicação e o resultado ficaram claros.
+- [ ] 🤖 Se você exportar um JSON, posso usá-lo para ajustar os limiares **padrão** de todos os usuários.
 
-### 1.4 👤 Primeira publicação em https://pincel.ea.tv.br ⏱ 30 min
+### 1.4 👤 Primeira publicação em https://lousa.ea.tv.br ⏱ 30 min
 
-O `rebuild.sh` foi testado num clone limpo (npm ci, 58 testes, build e rsync), **mas não na VPS**, e o container do proxy **não foi construído** (o Docker local estava desligado). Por isso a primeira execução pede atenção.
+O `rebuild.sh` foi testado num clone limpo (npm ci, 67 testes, build e rsync), **mas não na VPS**, e o container do proxy **não foi construído** (o Docker local estava desligado). Por isso a primeira execução pede atenção.
 
-- [ ] **Achado:** não encontrei o arquivo de nginx do pincel em nenhum projeto desta máquina (o `reverse-proxy-config` está limpo). Se você o criou na VPS (provável, via `create_ssl.sh`), compare com `deploy/nginx/pincel.ea.tv.br.conf`. O `create_ssl.sh` gera `root /var/www/[INSERT-YOUR-REPO-NAME]` e **não** inclui o location `/api/shape` nem o `sw.js` sem cache.
-- [ ] DNS: registro A de `pincel.ea.tv.br` para o IP da VPS (o `ea.tv.br` já aponta para o Shlink; o subdomínio precisa do seu próprio registro).
-- [ ] Certificado: `./create_ssl.sh` (ou `--only-certificate`) no `reverse-proxy-config`, para `pincel.ea.tv.br`.
-- [ ] No `reverse-proxy-config/docker-compose.yml`, em `nginx.volumes`, acrescentar `- /var/www/pincel.ea.tv.br:/var/www/pincel.ea.tv.br:ro` e recriar o nginx (`docker compose up -d nginx`).
-- [ ] No `sites/pincel.ea.tv.br.conf`: conferir os 4 pontos do cabeçalho do arquivo de referência (root, `index.html`/`sw.js` sem cache, `location = /api/shape`, `X-Forwarded-For $remote_addr`).
+- [ ] **Achado:** não encontrei o arquivo de nginx do pincel em nenhum projeto desta máquina (o `reverse-proxy-config` está limpo). Se você o criou na VPS (provável, via `create_ssl.sh`), compare com `deploy/nginx/lousa.ea.tv.br.conf`. O `create_ssl.sh` gera `root /var/www/[INSERT-YOUR-REPO-NAME]` e **não** inclui o location `/api/shape` nem o `sw.js` sem cache.
+- [ ] DNS: registro A de `lousa.ea.tv.br` para o IP da VPS (o `ea.tv.br` já aponta para o Shlink; o subdomínio precisa do seu próprio registro).
+- [ ] Certificado: `./create_ssl.sh` (ou `--only-certificate`) no `reverse-proxy-config`, para `lousa.ea.tv.br`.
+- [ ] No `reverse-proxy-config/docker-compose.yml`, em `nginx.volumes`, acrescentar `- /var/www/lousa.ea.tv.br:/var/www/lousa.ea.tv.br:ro` e recriar o nginx (`docker compose up -d nginx`).
+- [ ] No `sites/lousa.ea.tv.br.conf`: conferir os 4 pontos do cabeçalho do arquivo de referência (root, `index.html`/`sw.js` sem cache, `location = /api/shape`, `X-Forwarded-For $remote_addr`).
 - [ ] Na VPS: clonar o repositório em `~/Repos/pincel`, criar `.env.production` com `TYPESAFE_API_KEY=...` (e `JEV_MODEL`, se precisar) e rodar `./rebuild.sh`.
 - [ ] O script termina com um teste de fumaça; qualquer ⚠️ diz o que falta. Me mande a saída se algo falhar.
 - [ ] Depois do 1º deploy: abrir o site, desenhar um retângulo torto e conferir o ponto "analisando" (a IA depende da chave e do modelo; veja 1.1).
@@ -63,7 +62,7 @@ O `rebuild.sh` foi testado num clone limpo (npm ci, 58 testes, build e rsync), *
 
 - [ ] **Seta automática:** uma linha que liga duas formas deve ganhar seta no fim sozinha? Hoje não ganha (a seta se define na barra de contexto). Com seta automática, fluxogramas ficam mais rápidos; sem, diagramas sem direção ficam mais limpos.
 - [ ] **Marca:** ícone e cor de acento definitivos. Os atuais são provisórios (quadrado azul com uma pincelada). Afeta os tokens de cor, o ícone do PWA e o `manifest`. Quando decidir, 🤖 troco tudo.
-- [x] **Hospedagem:** decidido (VPS atrás do nginx do `reverse-proxy-config`, em `https://pincel.ea.tv.br`). `rebuild.sh`, `Dockerfile`, `docker-compose.yml` e `deploy/nginx/pincel.ea.tv.br.conf` já existem; falta o checklist da seção 1.4.
+- [x] **Hospedagem:** decidido (VPS atrás do nginx do `reverse-proxy-config`, em `https://lousa.ea.tv.br`). `rebuild.sh`, `Dockerfile`, `docker-compose.yml` e `deploy/nginx/lousa.ea.tv.br.conf` já existem; falta o checklist da seção 1.4.
 - [ ] **Quais formas a IA reconhece além de círculo/retângulo/triângulo?** Losango, linha, estrela, seta, coração... Cada uma é uma entrada em `server/jev.ts` + uma linha em `src/recognition/ai/shapes.ts`.
 - [ ] **Ajuda da IA ligada por padrão?** Hoje sim (se houver proxy configurado). Alternativa: desligada até o usuário ativar nas configurações.
 

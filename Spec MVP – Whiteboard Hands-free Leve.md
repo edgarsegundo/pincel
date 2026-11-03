@@ -47,7 +47,7 @@ A IA (JEV) entra na v2 para os casos ambíguos e para entender o desenho como um
 | F15 | Exportar/importar | PNG (recortado, 2x, tema atual) e JSON; importar por menu ou arrastando o arquivo |
 | F16 | Limpar quadro | Sem modal: notificação "Quadro limpo · Desfazer" |
 | F17 | Configurações, idiomas, tema | Painel lateral gerado por esquema; pt-BR e en; tema automático/claro/escuro |
-| F18 | Aprendizado local | Limiares por tipo sobem ao desfazer uma conversão e descem ao forçar uma |
+| F18 | Aprendizado local e treinamento opcional | Limiares por tipo sobem ao desfazer uma conversão e descem ao forçar uma |
 | F19 | PWA offline | Instalável; abre e desenha sem internet (verificado por teste) |
 
 ### Fora do escopo (próximas versões)
@@ -111,7 +111,17 @@ Limitação conhecida: formas inclinadas não são reconhecidas (ficam livres). 
 
 Desfazer uma conversão em até 5 s sobe o limiar do tipo em 0,02 (máx. 0,97); converter segurando algo que soltar não converteria desce 0,01 (mín. padrão − 0,10). Fica no `localStorage`; desligável nas configurações.
 
-### 4.6 Rabisco para apagar
+
+### 4.6 Treinamento opcional do reconhecimento
+
+O Pincel funciona com limiares padrão e **não pede** treinamento. Em Configurações → Avançado há o link "Treinar o reconhecimento de formas…", que abre uma tela (carregada sob demanda) onde o usuário desenha exemplos rotulados (retângulo, elipse, triângulo, losango, linha e "não é forma").
+
+- A calibração (`recognition/calibration.ts`) escolhe, para cada forma com ≥ 5 exemplos, o limiar de soltura mais permissivo (entre padrão − 0,10 e 0,97) que mantém as conversões indevidas ≤ 3% dos traços que não são aquela forma. A tela mostra antes/depois (acerto, conversões indevidas, forma trocada).
+- Trava de segurança: só ativa com ≥ 20 traços de "Não é forma"; sem eles a calibração poderia aceitar tudo e piorar o app.
+- "Ativar" grava os limiares em `localStorage` (`pincel.calibration`) e zera o aprendizado contínuo; o aprendizado (4.5) segue ajustando a partir do valor calibrado. "Voltar ao padrão" apaga os dois.
+- Os traços ficam no IndexedDB do aparelho; podem ser exportados/importados em JSON. Nada é enviado a servidor.
+
+### 4.7 Rabisco para apagar
 
 ≥ 4 inversões bruscas (> 120°), comprimento ≥ 3× a diagonal, ≤ 800 ms e tocando ao menos um objeto. Um rabisco que não toca nada continua como desenho.
 
@@ -206,7 +216,7 @@ Perguntas estreitas combinadas no código (padrão da doc: *speculative fan-out*
 
 - **Ao soltar:** só se o reconhecedor local **não converteu** (ambíguo ou abaixo do limiar), o traço é **quase fechado** (lacuna < 22%), tem tamanho plausível e passa nas mesmas proteções da conversão local (tamanho mínimo, cadência de escrita, auto-endireitar ligado). Letras, linhas e traços abertos nunca saem do navegador. A resposta chega depois: o traço vira forma com a animação normal, em **um passo de histórico** (Cmd+Z restaura o traço).
 - **Ao segurar parado:** se o local não reconhece nem com o limiar menor, a IA é consultada na hora; se a resposta chega com o ponteiro ainda parado, entra o mesmo fluxo de "segurar e ajustar o tamanho".
-- **Aceite local da resposta** (`recognition/ai/apply.ts`): forma ≠ `none`, confiança do Choice ≥ `aiThreshold` (0,70), `deliberate` ≥ 0,60 **e** encaixe local mínimo de 0,30 no tipo escolhido. O JEV nunca força uma geometria absurda (um triângulo nítido não vira "círculo").
+- **Aceite local da resposta** (`recognition/ai/apply.ts`): forma ≠ `none`, confiança do Choice ≥ `aiThreshold` (0,60), `deliberate` ≥ 0,50 **e** encaixe local mínimo de 0,30 no tipo escolhido. O JEV nunca força uma geometria absurda (um triângulo nítido não vira "círculo").
 
 ### 11.4 Robustez (`recognition/ai/coordinator.ts`)
 
@@ -222,7 +232,7 @@ A chave **nunca** vai ao navegador. O proxy aceita **apenas o formato exato do P
 2. `npm run jev:models` lista os modelos; ajuste `JEV_MODEL` se o padrão (`jev-1.13.0`, o do projeto emprego) não existir mais.
 3. `npm run jev:calibrate` roda traços rotulados no JEV real e imprime matriz de confusão, tabela de limiares (precisão × cobertura), tokens, custo e latência. Ajuste `aiThreshold` com base nela.
 4. `npm run dev`: o proxy roda dentro do Vite em `/api/shape` (nenhum processo extra).
-5. **Produção (VPS):** `./rebuild.sh [tag-ou-branch]` na VPS (em `~/Repos/pincel`). Ele roda typecheck e testes, faz o build com `VITE_AI_ENDPOINT=/api/shape`, publica o site por `rsync` em `/var/www/pincel.ea.tv.br` (o nginx serve do host por bind mount), recria o container `pincel_proxy` (Dockerfile + docker-compose.yml, rede `nginx-proxy-network`, sem porta publicada), valida e recarrega o nginx e faz um teste de fumaça (site, manifest, `sw.js` sem cache e `/api/shape`). A configuração de referência do nginx está em `deploy/nginx/pincel.ea.tv.br.conf`. O container exige `TRUST_PROXY=1` (já no compose) e o nginx precisa **substituir** o `X-Forwarded-For` por `$remote_addr`.
+5. **Produção (VPS):** `./rebuild.sh [tag-ou-branch]` na VPS (em `~/Repos/pincel`). Ele roda typecheck e testes, faz o build com `VITE_AI_ENDPOINT=/api/shape`, publica o site por `rsync` em `/var/www/lousa.ea.tv.br` (o nginx serve do host por bind mount), recria o container `pincel_proxy` (Dockerfile + docker-compose.yml, rede `nginx-proxy-network`, sem porta publicada), valida e recarrega o nginx e faz um teste de fumaça (site, manifest, `sw.js` sem cache e `/api/shape`). A configuração de referência do nginx está em `deploy/nginx/lousa.ea.tv.br.conf`. O container exige `TRUST_PROXY=1` (já no compose) e o nginx precisa **substituir** o `X-Forwarded-For` por `$remote_addr`.
 
 ### 11.7 Próximas capacidades (mesmo desenho)
 
@@ -230,11 +240,11 @@ Mais formas (losango, linha, estrela): nova opção em `SHAPE_CRITERIA` + linha 
 
 ## 12. Testes e qualidade
 
-- **Unitários (58):** viewport, hit-test, histórico (incluindo a tela no desfazer da importação), reconhecimento (360 traços sintéticos: 98,7% de acerto e 0% de falsos positivos ao soltar; 100% ao segurar), conectores, validação de importação (campos opcionais, ids repetidos), cache de caixas, características geométricas, coordenador da IA (concorrência, cancelamento, descarte, disjuntor), aplicação do veredito, proxy (formato do pedido ao JEV, validação, limite, erros, CORS) e pipeline completo com um JEV simulado por regra (91% de acerto nas formas e 0 falsos positivos em losango/estrela/oito; **mede o encanamento e a separabilidade das características, não a qualidade do JEV real**).
+- **Unitários (67):** calibração do treinamento (trava de "none", limiares, não piorar), viewport, hit-test, histórico (incluindo a tela no desfazer da importação), reconhecimento (360 traços sintéticos: 98,7% de acerto e 0% de falsos positivos ao soltar; 100% ao segurar), conectores, validação de importação (campos opcionais, ids repetidos), cache de caixas, características geométricas, coordenador da IA (concorrência, cancelamento, descarte, disjuntor), aplicação do veredito, proxy (formato do pedido ao JEV, validação, limite, erros, CORS) e pipeline completo com um JEV simulado por regra (91% de acerto nas formas e 0 falsos positivos em losango/estrela/oito; **mede o encanamento e a separabilidade das características, não a qualidade do JEV real**).
 - **E2E em Chromium (29):** desenhar, conversão e desfazer em dois passos, segurar e ajustar, texto e rótulo, rabisco, conector que acompanha, persistência, exportar/importar JSON, PNG, configurações/idioma, fade ao apagar, notificação de limpar, desempenho com 1.000 formas, e o fluxo da IA com o proxy interceptado (traço ambíguo → forma em segundo plano, recusa por confiança/intenção/encaixe, resposta atrasada descartada, indicador, segurar + IA, proxy sem chave, disjuntor, IA desligada, traço aberto nunca enviado).
 - **Saúde (e2e):** sem vazamento (8 ciclos completos de uso: heap estabiliza em ~4,7 MB, 308 nós e 100 listeners constantes), 0 frames de renderização quando ocioso, 5.000 objetos (redesenho ~5 ms, hover sem custo mensurável), traço de 1.800 pontos com custo por frame estável (≤ 1,3 ms).
 - **PWA (1):** abre e desenha offline no build de produção.
-- **Limite:** os traços sintéticos são mais limpos que traços reais; use `dev/stroke-recorder.html` para gravar ≥ 200 traços reais rotulados (incluindo os que **não** devem converter) e recalibrar os limiares.
+- **Limite:** os traços sintéticos são mais limpos que traços reais. Por isso o app tem o treinamento opcional (4.6): o usuário grava os próprios traços rotulados (incluindo os que **não** devem converter) e calibra os limiares no aparelho.
 
 ## 13. Critérios de aceite
 
